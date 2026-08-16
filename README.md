@@ -194,6 +194,16 @@ Add your machine to `acp_quirk_table` in `sound/soc/amd/acp-config.c` and to `ac
 distribution, uninstall this and enjoy stock, signed modules. Patches welcome here too — if you get your model
 merged upstream, open an issue so it can be listed as no longer needing this.
 
+## Authorship
+
+Roughly **90% of this repository was written by [Claude](https://claude.com/claude-code)** (Anthropic's Claude
+Code, Opus 5) during a single interactive debugging session on the affected laptop: the diagnosis, the binary
+analysis of the kernel modules and their DMI tables, the ELF relocation check that proved donor entries are
+interchangeable, the patcher, the installer and this README.
+
+The human half of the session supplied the hardware, ran every privileged command, and verified the result on
+real speakers. Both halves were needed — but credit where it is due.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
@@ -294,3 +304,13 @@ sudo ./uninstall.sh && sudo reboot
 Добавить свою модель в `acp_quirk_table` (`sound/soc/amd/acp-config.c`) и в `acp3x_es83xx_dmi_table`
 (`sound/soc/amd/acp/acp-legacy-mach.c`) и отправить патч мейнтейнерам ALSA. Когда он доедет до вашего
 дистрибутива, этот костыль можно снести и вернуться к штатным подписанным модулям.
+
+## Авторство
+
+**Примерно 90% этого репозитория написано [Claude](https://claude.com/claude-code)** (Claude Code, модель Opus 5
+от Anthropic) за одну интерактивную сессию отладки на самом ноутбуке: диагностика, двоичный разбор модулей ядра
+и их DMI-таблиц, проверка таблицы перемещений ELF (именно она доказала, что записи-доноры взаимозаменяемы),
+патчер, установщик и этот README.
+
+Человеческая половина сессии предоставила железо, выполняла все команды под root и проверила результат на живых
+динамиках. Нужны были обе половины — но заслуги стоит указывать честно.
