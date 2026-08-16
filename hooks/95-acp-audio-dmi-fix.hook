@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Path
+Target = usr/lib/modules/*/kernel/sound/soc/amd/snd-acp-config.ko.zst
+Target = usr/lib/modules/*/kernel/sound/soc/amd/acp/snd-acp-legacy-mach.ko.zst
+
+[Action]
+Description = Re-applying ACP/ES83xx DMI allow-list patch for this laptop...
+When = PostTransaction
+Exec = /usr/local/bin/acp-audio-dmi-fix
