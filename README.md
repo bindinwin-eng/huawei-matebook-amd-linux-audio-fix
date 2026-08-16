@@ -85,7 +85,7 @@ kernel sets a taint flag (`8192`), which is informational only.
 Requirements: `zstd`, `python3`, `depmod` (kmod). Root. Arch-based distros get the kernel-update hook automatically.
 
 ```bash
-git clone https://github.com/USER/huawei-matebook-amd-linux-audio-fix.git
+git clone https://github.com/bindinwin-eng/huawei-matebook-amd-linux-audio-fix.git
 cd huawei-matebook-amd-linux-audio-fix
 sudo ./install.sh
 sudo reboot
@@ -238,7 +238,7 @@ modprobe: ERROR: could not insert 'snd_acp_config': Key was rejected by service
 Нужны `zstd`, `python3`, `depmod` и root.
 
 ```bash
-git clone https://github.com/USER/huawei-matebook-amd-linux-audio-fix.git
+git clone https://github.com/bindinwin-eng/huawei-matebook-amd-linux-audio-fix.git
 cd huawei-matebook-amd-linux-audio-fix
 ./diagnose.sh                 # только чтение: подтверждает, что проблема именно эта
 sudo ./install.sh --dry-run   # показать, что будет изменено, ничего не записывая
