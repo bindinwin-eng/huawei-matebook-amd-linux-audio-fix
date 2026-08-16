@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Register an unsupported laptop model in the AMD ACP / ES83xx DMI whitelists
+Register an unsupported laptop model in the AMD ACP / ES83xx DMI allow-lists
 that are compiled into the Linux kernel modules.
 
 Background
@@ -97,8 +97,8 @@ def find_donors(blob: bytes, vendor: str, version: str, needed: int) -> list[tup
         if ver_off + len(version_b) + 1 > len(blob):
             continue
 
-        # the version slot of this entry must equal ours, otherwise the entry
-        # would not match our machine even after the rename
+        # The version slot of this entry must equal ours, otherwise the entry
+        # would not match this machine even after the rename.
         if blob[ver_off:ver_off + len(version_b) + 1] != version_b + b"\x00":
             continue
 
@@ -118,7 +118,7 @@ def patch_module(path: pathlib.Path, vendor: str, product: str, version: str,
     orig = path.with_suffix(path.suffix + ".orig")
 
     if not path.exists():
-        print(f"  [skip] {path} — не найден / not found")
+        print(f"  [skip] {path} - not found")
         return False
 
     if not orig.exists() and not dry_run:
@@ -130,19 +130,19 @@ def patch_module(path: pathlib.Path, vendor: str, product: str, version: str,
                           capture_output=True, check=True).stdout
 
     if (product.encode() + b"\x00") in blob:
-        print(f"  [ok]   {path.name} — уже содержит {product} / already lists {product}")
+        print(f"  [ok]   {path.name} - already lists {product}")
         return False
 
     donors = find_donors(blob, vendor, version, len(product))
     if not donors:
-        print(f"  [FAIL] {path.name} — нет подходящей записи-донора "
-              f"({vendor} / *, версия {version}, имя >= {len(product)} символов)")
+        print(f"  [FAIL] {path.name} - no suitable donor entry "
+              f"(vendor {vendor}, version {version}, name >= {len(product)} chars)")
         return False
 
     if donor_pref:
         chosen = next((d for d in donors if d[1] == donor_pref), None)
         if chosen is None:
-            print(f"  [FAIL] {path.name} — донор {donor_pref} не найден; доступны: "
+            print(f"  [FAIL] {path.name} - donor {donor_pref} not found; available: "
                   + ", ".join(n for _, n in donors))
             return False
     else:
@@ -155,16 +155,16 @@ def patch_module(path: pathlib.Path, vendor: str, product: str, version: str,
     patched = bytes(patched)
 
     if patched.count(new) != 1:
-        print(f"  [FAIL] {path.name} — неожиданное число вхождений {product}")
+        print(f"  [FAIL] {path.name} - unexpected number of {product} occurrences")
         return False
 
     patched = strip_signature(patched)
     if patched[:4] != b"\x7fELF":
-        print(f"  [FAIL] {path.name} — результат не является ELF")
+        print(f"  [FAIL] {path.name} - result is not an ELF image")
         return False
 
-    print(f"  [+]    {path.name} — {donor_name} -> {product}"
-          + (" (пробный прогон / dry run)" if dry_run else ", подпись срезана"))
+    print(f"  [+]    {path.name} - {donor_name} -> {product}"
+          + (" (dry run)" if dry_run else ", signature stripped"))
     if dry_run:
         return False
 
@@ -172,7 +172,7 @@ def patch_module(path: pathlib.Path, vendor: str, product: str, version: str,
     proc = subprocess.run(["zstd", "-19", "-q", "-f", "-o", str(tmp)],
                           input=patched, capture_output=True)
     if proc.returncode != 0:
-        print(f"  [FAIL] {path.name} — zstd: {proc.stderr.decode(errors='replace')}")
+        print(f"  [FAIL] {path.name} - zstd: {proc.stderr.decode(errors='replace')}")
         tmp.unlink(missing_ok=True)
         return False
     tmp.replace(path)
@@ -197,10 +197,10 @@ def main() -> int:
     version = dmi("product_version")
 
     if not vendor or not product or not version:
-        print("Не удалось прочитать DMI (/sys/class/dmi/id) / cannot read DMI", file=sys.stderr)
+        print("Cannot read DMI data from /sys/class/dmi/id", file=sys.stderr)
         return 1
 
-    print(f"Машина / machine: {vendor} / {product} / {version}")
+    print(f"Machine: {vendor} / {product} / {version}")
 
     if args.kernel:
         kernels = [pathlib.Path("/usr/lib/modules") / k for k in args.kernel]
@@ -209,21 +209,20 @@ def main() -> int:
                          if (p / "kernel").is_dir())
 
     if not kernels:
-        print("Не найдено ни одного ядра / no kernels found", file=sys.stderr)
+        print("No installed kernels found", file=sys.stderr)
         return 1
 
-    rc = 0
     for kdir in kernels:
-        print(f"\nЯдро / kernel {kdir.name}:")
+        print(f"\nKernel {kdir.name}:")
         changed = False
         for rel in DEFAULT_MODULES:
             if patch_module(kdir / rel, vendor, product, version, args.donor, args.dry_run):
                 changed = True
         if changed:
             subprocess.run(["depmod", kdir.name], check=False)
-            print(f"  depmod {kdir.name} — выполнен / done")
+            print(f"  depmod {kdir.name} - done")
 
-    return rc
+    return 0
 
 
 if __name__ == "__main__":
